@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 遊戲初始化
     function initGame() {
         gameState.rounds = 0;
+        gameState.score = 0;
         gameState.isRunning = true;
         elements.startScreen.classList.add('hidden');
         elements.gameScreen.classList.remove('hidden');
