@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let rounds = 0;
     let isGameRunning = false;
 
-    // 遊戲初始化
     function initGame() {
         rounds = 0;
         isGameRunning = true;
@@ -25,7 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
         startRound();
     }
 
-    // 開始新一輪
     function startRound() {
         clearInterval(timer);
         rounds++;
@@ -54,7 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
         timer = setInterval(updateTimer, 1000);
     }
 
-    // 更新計時器
     function updateTimer() {
         timeLeft--;
         timerDisplay.textContent = `剩餘時間：${timeLeft} 秒`;
@@ -63,7 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 檢查三點是否連成一線
     function checkLine() {
         const x1 = parseFloat(point1.style.left);
         const y1 = parseFloat(point1.style.top);
@@ -84,7 +80,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return angle <= 10;
     }
 
-    // 遊戲結束
     function endGame() {
         clearInterval(timer);
         isGameRunning = false;
@@ -92,32 +87,26 @@ document.addEventListener('DOMContentLoaded', () => {
         endScreen.classList.remove('hidden');
     }
 
-    // 點擊事件
     pointsContainer.addEventListener('click', (e) => {
         if (!isGameRunning) return;
 
         if (point3.style.display === 'none') {
-            // 放置第三個點
             const rect = pointsContainer.getBoundingClientRect();
-            const x = e.clientX - rect.left; // 將座標轉換為相對於 pointsContainer
+            const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
 
             point3.style.left = `${x}px`;
             point3.style.top = `${y}px`;
             point3.style.display = 'block';
 
-            // 檢查是否連成一線
             if (checkLine()) {
-                startRound(); // 成功後開始新一輪
+                startRound();
             } else {
-                endGame(); // 未成功則遊戲結束
+                endGame();
             }
         }
     });
 
-    // 開始按鈕
     startButton.addEventListener('click', initGame);
-
-    // 再試一次按鈕
     retryButton.addEventListener('click', initGame);
 });
