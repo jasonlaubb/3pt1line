@@ -1,126 +1,123 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const startScreen = document.getElementById('start-screen');
-    const gameScreen = document.getElementById('game-screen');
-    const endScreen = document.getElementById('end-screen');
-    const startButton = document.getElementById('start-button');
-    const retryButton = document.getElementById('retry-button');
-    const timerDisplay = document.getElementById('timer');
-    const pointsContainer = document.getElementById('points');
-    const point1 = document.getElementById('point1');
-    const point2 = document.getElementById('point2');
-    const point3 = document.getElementById('point3');
+    // 元素選取
+    const elements = {
+        startScreen: document.getElementById('start-screen'),
+        gameScreen: document.getElementById('game-screen'),
+        endScreen: document.getElementById('end-screen'),
+        startButton: document.getElementById('start-button'),
+        retryButton: document.getElementById('retry-button'),
+        timerDisplay: document.getElementById('timer'),
+        pointsContainer: document.getElementById('points'),
+        points: {
+            p1: document.getElementById('point1'),
+            p2: document.getElementById('point2'),
+            p3: document.getElementById('point3')
+        }
+    };
 
-    let timer;
-    let timeLeft;
-    let rounds = 0;
-    let isGameRunning = false;
+    // 遊戲狀態
+    let gameState = {
+        timer: null,
+        timeLeft: 10,
+        rounds: 0,
+        isRunning: false
+    };
 
+    // 遊戲初始化
     function initGame() {
-        rounds = 0;
-        isGameRunning = true;
-        startScreen.classList.add('hidden');
-        gameScreen.classList.remove('hidden');
-        endScreen.classList.add('hidden');
+        gameState.rounds = 0;
+        gameState.isRunning = true;
+        elements.startScreen.classList.add('hidden');
+        elements.gameScreen.classList.remove('hidden');
+        elements.endScreen.classList.add('hidden');
         startRound();
     }
 
+    // 回合開始
     function startRound() {
-        clearInterval(timer); // 清理掉之前的計時器
-        rounds++;
-        timeLeft = rounds <= 5 ? 10 : rounds <= 12 ? 5 : rounds <= 20 ? 3 : 1;
-        timerDisplay.textContent = `剩餘時間：${timeLeft} 秒`;
-
-        // 隨機生成兩個點
+        clearInterval(gameState.timer);
+        gameState.rounds++;
+        
+        // 時間計算
+        gameState.timeLeft = gameState.rounds <= 5 ? 10 :
+                           gameState.rounds <= 12 ? 5 :
+                           gameState.rounds <= 20 ? 3 : 1;
+        
+        // 更新介面
+        elements.timerDisplay.textContent = `剩餘時間：${gameState.timeLeft} 秒`;
+        elements.points.p3.style.display = 'none';
+        elements.points.p3.removeAttribute('style');
+        
+        // 生成新點
         generatePoints();
-
-        // 重置 point3 狀態
-        point3.style.display = 'none';
-        point3.style.left = '0px';
-        point3.style.top = '0px';
-
-        // 啟動新的計時器
-        timer = setInterval(updateTimer, 1000);
+        
+        // 啟動定時器
+        gameState.timer = setInterval(() => {
+            gameState.timeLeft--;
+            elements.timerDisplay.textContent = `剩餘時間：${gameState.timeLeft} 秒`;
+            if (gameState.timeLeft <= 0) endGame();
+        }, 1000);
     }
 
-    function updateTimer() {
-        if (timeLeft > 0) {
-            timeLeft--;
-            timerDisplay.textContent = `剩餘時間：${timeLeft} 秒`;
-        } else {
-            endGame(); // 時間結束時，結束遊戲
-        }
-    }
-
+    // 生成點位
     function generatePoints() {
-        const pointSize = 20; // 點的大小
+        const size = 20;
+        const getPos = () => ({
+            x: Math.random() * (window.innerWidth - size),
+            y: Math.random() * (window.innerHeight - size)
+        });
 
-        // 隨機生成 point1 的位置
-        const point1X = Math.random() * (window.innerWidth - pointSize);
-        const point1Y = Math.random() * (window.innerHeight - pointSize);
-        point1.style.left = `${point1X}px`;
-        point1.style.top = `${point1Y}px`;
+        // 第一個點
+        const p1 = getPos();
+        elements.points.p1.style.left = `${p1.x}px`;
+        elements.points.p1.style.top = `${p1.y}px`;
 
-        // 隨機生成 point2 的位置
-        let point2X, point2Y, distance;
+        // 第二個點（確保距離）
+        let p2;
         do {
-            point2X = Math.random() * (window.innerWidth - pointSize);
-            point2Y = Math.random() * (window.innerHeight - pointSize);
-
-            // 確保 point1 和 point2 之間的距離不過近
-            distance = Math.sqrt(Math.pow(point2X - point1X, 2) + Math.pow(point2Y - point1Y, 2));
-        } while (distance < 50); // 避免兩點過於接近
-
-        point2.style.left = `${point2X}px`;
-        point2.style.top = `${point2Y}px`;
+            p2 = getPos();
+        } while (Math.hypot(p2.x - p1.x, p2.y - p1.y) < 50);
+        
+        elements.points.p2.style.left = `${p2.x}px`;
+        elements.points.p2.style.top = `${p2.y}px`;
     }
 
-    function checkLine() {
-        const x1 = parseFloat(point1.style.left);
-        const y1 = parseFloat(point1.style.top);
-        const x2 = parseFloat(point2.style.left);
-        const y2 = parseFloat(point2.style.top);
-        const x3 = parseFloat(point3.style.left);
-        const y3 = parseFloat(point3.style.top);
+    // 檢查三點一線
+    function checkAlignment() {
+        const parse = el => ({
+            x: parseFloat(el.style.left),
+            y: parseFloat(el.style.top)
+        });
 
-        if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2) || isNaN(x3) || isNaN(y3)) {
-            console.error('無法檢測三點的坐標');
-            return false;
-        }
-
-        const slope1 = (x2 - x1) !== 0 ? (y2 - y1) / (x2 - x1) : Infinity;
-        const slope2 = (x3 - x2) !== 0 ? (y3 - y2) / (x3 - x2) : Infinity;
-
-        const angle = Math.abs(Math.atan((slope2 - slope1) / (1 + slope1 * slope2)) * (180 / Math.PI));
-        return angle <= 10;
+        const [p1, p2, p3] = ['p1', 'p2', 'p3'].map(p => parse(elements.points[p]));
+        
+        // 計算斜率差
+        const slope = (a, b) => (b.y - a.y) / (b.x - a.x || 0.0001);
+        const angle = Math.abs(Math.atan((slope(p2,p3) - slope(p1,p2)) / (1 + slope(p1,p2)*slope(p2,p3))));
+        return angle * (180/Math.PI) < 10;
     }
 
+    // 結束遊戲
     function endGame() {
-        clearInterval(timer);
-        isGameRunning = false;
-        gameScreen.classList.add('hidden');
-        endScreen.classList.remove('hidden');
+        clearInterval(gameState.timer);
+        gameState.isRunning = false;
+        elements.gameScreen.classList.add('hidden');
+        elements.endScreen.classList.remove('hidden');
     }
 
-    pointsContainer.addEventListener('click', (e) => {
-        if (!isGameRunning) return;
+    // 點擊事件處理
+    elements.pointsContainer.addEventListener('click', e => {
+        if (!gameState.isRunning || elements.points.p3.style.display === 'block') return;
 
-        if (point3.style.display === 'none') {
-            const rect = pointsContainer.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+        const rect = elements.pointsContainer.getBoundingClientRect();
+        elements.points.p3.style.left = `${e.clientX - rect.left}px`;
+        elements.points.p3.style.top = `${e.clientY - rect.top}px`;
+        elements.points.p3.style.display = 'block';
 
-            point3.style.left = `${x}px`;
-            point3.style.top = `${y}px`;
-            point3.style.display = 'block';
-
-            if (checkLine()) {
-                startRound();
-            } else {
-                endGame();
-            }
-        }
+        checkAlignment() ? startRound() : endGame();
     });
 
-    startButton.addEventListener('click', initGame);
-    retryButton.addEventListener('click', initGame);
+    // 按鈕綁定
+    elements.startButton.addEventListener('click', initGame);
+    elements.retryButton.addEventListener('click', initGame);
 });
