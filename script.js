@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
                            gameState.rounds <= 20 ? 3 : 1;
         
         // 更新介面
-        elements.timerDisplay.textContent = `剩餘時間：${gameState.timeLeft} 秒`;
+        elements.timerDisplay.textContent = `剩餘時間：${gameState.timeLeft.toFixed(1)} 秒`;
         elements.points.p3.style.display = 'none';
         elements.points.p3.removeAttribute('style');
         
@@ -58,10 +58,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 啟動定時器
         gameState.timer = setInterval(() => {
-            gameState.timeLeft--;
-            elements.timerDisplay.textContent = `剩餘時間：${gameState.timeLeft} 秒`;
+            gameState.timeLeft -= 0.1;
+            elements.timerDisplay.textContent = `剩餘時間：${gameState.timeLeft.toFixed(1)} 秒`;
             if (gameState.timeLeft <= 0) endGame();
-        }, 1000);
+        }, 100);
     }
 
     // 生成點位
