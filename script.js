@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
         startButton: document.getElementById('start-button'),
         retryButton: document.getElementById('retry-button'),
         timerDisplay: document.getElementById('timer'),
+        currentScoreDisplay: document.getElementById('current-score'),
+        finalScoreDisplay: document.getElementById('final-score'),
         pointsContainer: document.getElementById('points'),
         points: {
             p1: document.getElementById('point1'),
@@ -20,16 +22,19 @@ document.addEventListener('DOMContentLoaded', () => {
         timer: null,
         timeLeft: 10,
         rounds: 0,
+        score: 0,
         isRunning: false
     };
 
     // 遊戲初始化
     function initGame() {
         gameState.rounds = 0;
+        gameState.score = 0;
         gameState.isRunning = true;
         elements.startScreen.classList.add('hidden');
         elements.gameScreen.classList.remove('hidden');
         elements.endScreen.classList.add('hidden');
+        updateScoreDisplay();
         startRound();
     }
 
@@ -93,8 +98,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 計算斜率差
         const slope = (a, b) => (b.y - a.y) / (b.x - a.x || 0.0001);
-        const angle = Math.abs(Math.atan((slope(p2,p3) - slope(p1,p2)) / (1 + slope(p1,p2)*slope(p2,p3))));
+        const angle = Math.abs(Math.atan((slope(p2,p3) - slope(p1,p2)) / (1 + slope(p1,p2)*slope(p2,p3)));
         return angle * (180/Math.PI) < 10;
+    }
+
+    // 更新分數顯示
+    function updateScoreDisplay() {
+        elements.currentScoreDisplay.textContent = `得分：${gameState.score}`;
+        elements.finalScoreDisplay.textContent = `最終得分：${gameState.score}`;
     }
 
     // 結束遊戲
@@ -114,7 +125,13 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.points.p3.style.top = `${e.clientY - rect.top}px`;
         elements.points.p3.style.display = 'block';
 
-        checkAlignment() ? startRound() : endGame();
+        if (checkAlignment()) {
+            gameState.score += 100;
+            updateScoreDisplay();
+            startRound();
+        } else {
+            endGame();
+        }
     });
 
     // 按鈕綁定
