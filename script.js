@@ -12,7 +12,11 @@ document.addEventListener('DOMContentLoaded', () => {
             p1: document.getElementById('point1'),
             p2: document.getElementById('point2'),
             p3: document.getElementById('point3')
-        }
+        },
+        score: {
+            now: document.getElementById('current-score'),
+            final: document.getElementById('final-score'),
+        },
     };
 
     // 遊戲狀態
@@ -20,7 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
         timer: null,
         timeLeft: 10,
         rounds: 0,
-        isRunning: false
+        isRunning: false,
+        score: 0,
     };
 
     // 遊戲初始化
@@ -114,7 +119,14 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.points.p3.style.top = `${e.clientY - rect.top}px`;
         elements.points.p3.style.display = 'block';
 
-        checkAlignment() ? startRound() : endGame();
+        if (checkAlignment()) {
+            gameState.score += 100;
+            elements.score.now.textContent = `得分：${gameState.score}`;
+            startRound();
+        } else {
+            elements.score.final.textContent = `最終得分：${gameState.score}`;
+            endGame();
+        }
     });
 
     // 按鈕綁定
