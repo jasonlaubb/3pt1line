@@ -12,7 +12,6 @@ const point3 = document.getElementById('point3');
 
 let timer;
 let timeLeft;
-let gameInterval;
 let rounds = 0;
 let isGameRunning = false;
 
