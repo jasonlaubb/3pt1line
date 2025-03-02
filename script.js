@@ -25,39 +25,53 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function startRound() {
-        clearInterval(timer);
+        clearInterval(timer); // 清理掉之前的計時器
         rounds++;
         timeLeft = rounds <= 5 ? 10 : rounds <= 12 ? 5 : rounds <= 20 ? 3 : 1;
         timerDisplay.textContent = `剩餘時間：${timeLeft} 秒`;
 
         // 隨機生成兩個點
-        let point1X, point1Y, point2X, point2Y;
+        generatePoints();
 
-        do {
-            point1X = Math.random() * (window.innerWidth - 40) + 20;
-            point1Y = Math.random() * (window.innerHeight - 40) + 20;
+        // 重置 point3 狀態
+        point3.style.display = 'none';
+        point3.style.left = '0px';
+        point3.style.top = '0px';
 
-            point2X = Math.random() * (window.innerWidth - 40) + 20;
-            point2Y = Math.random() * (window.innerHeight - 40) + 20;
-
-            const distance = Math.sqrt(Math.pow(point2X - point1X, 2) + Math.pow(point2Y - point1Y, 2));
-        } while (distance < 50); // 避免兩點過於接近
-
-        point1.style.left = `${point1X}px`;
-        point1.style.top = `${point1Y}px`;
-        point2.style.left = `${point2X}px`;
-        point2.style.top = `${point2Y}px`;
-        point3.style.display = 'none'; // 隱藏第三個點
-
+        // 啟動新的計時器
         timer = setInterval(updateTimer, 1000);
     }
 
     function updateTimer() {
-        timeLeft--;
-        timerDisplay.textContent = `剩餘時間：${timeLeft} 秒`;
-        if (timeLeft <= 0) {
-            endGame();
+        if (timeLeft > 0) {
+            timeLeft--;
+            timerDisplay.textContent = `剩餘時間：${timeLeft} 秒`;
+        } else {
+            endGame(); // 時間結束時，結束遊戲
         }
+    }
+
+    function generatePoints() {
+        const pointSize = 20; // 點的大小
+
+        // 隨機生成 point1 的位置
+        const point1X = Math.random() * (window.innerWidth - pointSize);
+        const point1Y = Math.random() * (window.innerHeight - pointSize);
+        point1.style.left = `${point1X}px`;
+        point1.style.top = `${point1Y}px`;
+
+        // 隨機生成 point2 的位置
+        let point2X, point2Y, distance;
+        do {
+            point2X = Math.random() * (window.innerWidth - pointSize);
+            point2Y = Math.random() * (window.innerHeight - pointSize);
+
+            // 確保 point1 和 point2 之間的距離不過近
+            distance = Math.sqrt(Math.pow(point2X - point1X, 2) + Math.pow(point2Y - point1Y, 2));
+        } while (distance < 50); // 避免兩點過於接近
+
+        point2.style.left = `${point2X}px`;
+        point2.style.top = `${point2Y}px`;
     }
 
     function checkLine() {
