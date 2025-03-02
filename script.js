@@ -15,8 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let rounds = 0;
     let isGameRunning = false;
 
+    // 遊戲初始化
     function initGame() {
-        console.log('遊戲初始化完成');
         rounds = 0;
         isGameRunning = true;
         startScreen.classList.add('hidden');
@@ -25,36 +25,36 @@ document.addEventListener('DOMContentLoaded', () => {
         startRound();
     }
 
-function generateRandomPosition() {
-    const pointX = Math.random() * (window.innerWidth - 40) + 20;
-    const pointY = Math.random() * (window.innerHeight - 40) + 20;
+    // 開始新一輪
+    function startRound() {
+        clearInterval(timer);
+        rounds++;
+        timeLeft = rounds <= 5 ? 10 : rounds <= 12 ? 5 : rounds <= 20 ? 3 : 1;
+        timerDisplay.textContent = `剩餘時間：${timeLeft} 秒`;
 
-    // 確保點在窗口範圍內
-    return {
-        x: Math.min(Math.max(pointX, 20), window.innerWidth - 20),
-        y: Math.min(Math.max(pointY, 20), window.innerHeight - 20),
-    };
-}
+        // 隨機生成兩個點
+        let point1X, point1Y, point2X, point2Y;
 
-function startRound() {
-    clearInterval(timer);
-    console.log('開始新一輪');
-    rounds++;
-    timeLeft = rounds <= 5 ? 10 : rounds <= 12 ? 5 : rounds <= 20 ? 3 : 1;
-    timerDisplay.textContent = `剩餘時間：${timeLeft} 秒`;
+        do {
+            point1X = Math.random() * (window.innerWidth - 40) + 20;
+            point1Y = Math.random() * (window.innerHeight - 40) + 20;
 
-    const point1Pos = generateRandomPosition();
-    const point2Pos = generateRandomPosition();
+            point2X = Math.random() * (window.innerWidth - 40) + 20;
+            point2Y = Math.random() * (window.innerHeight - 40) + 20;
 
-    point1.style.left = `${point1Pos.x}px`;
-    point1.style.top = `${point1Pos.y}px`;
-    point2.style.left = `${point2Pos.x}px`;
-    point2.style.top = `${point2Pos.y}px`;
-    point3.style.display = 'none';
+            const distance = Math.sqrt(Math.pow(point2X - point1X, 2) + Math.pow(point2Y - point1Y, 2));
+        } while (distance < 50); // 避免兩點過於接近
 
-    timer = setInterval(updateTimer, 1000);
-}
+        point1.style.left = `${point1X}px`;
+        point1.style.top = `${point1Y}px`;
+        point2.style.left = `${point2X}px`;
+        point2.style.top = `${point2Y}px`;
+        point3.style.display = 'none'; // 隱藏第三個點
 
+        timer = setInterval(updateTimer, 1000);
+    }
+
+    // 更新計時器
     function updateTimer() {
         timeLeft--;
         timerDisplay.textContent = `剩餘時間：${timeLeft} 秒`;
@@ -63,6 +63,7 @@ function startRound() {
         }
     }
 
+    // 檢查三點是否連成一線
     function checkLine() {
         const x1 = parseFloat(point1.style.left);
         const y1 = parseFloat(point1.style.top);
@@ -71,13 +72,19 @@ function startRound() {
         const x3 = parseFloat(point3.style.left);
         const y3 = parseFloat(point3.style.top);
 
+        if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2) || isNaN(x3) || isNaN(y3)) {
+            console.error('無法檢測三點的坐標');
+            return false;
+        }
+
         const slope1 = (x2 - x1) !== 0 ? (y2 - y1) / (x2 - x1) : Infinity;
         const slope2 = (x3 - x2) !== 0 ? (y3 - y2) / (x3 - x2) : Infinity;
-        const angle = Math.abs(Math.atan((slope2 - slope1) / (1 + slope1 * slope2)) * (180 / Math.PI));
 
+        const angle = Math.abs(Math.atan((slope2 - slope1) / (1 + slope1 * slope2)) * (180 / Math.PI));
         return angle <= 10;
     }
 
+    // 遊戲結束
     function endGame() {
         clearInterval(timer);
         isGameRunning = false;
@@ -85,27 +92,32 @@ function startRound() {
         endScreen.classList.remove('hidden');
     }
 
+    // 點擊事件
     pointsContainer.addEventListener('click', (e) => {
         if (!isGameRunning) return;
 
-        if (e.target.classList.contains('point')) {
-            if (point3.style.display === 'none') {
-                const rect = pointsContainer.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                point3.style.left = `${x}px`;
-                point3.style.top = `${y}px`;
-                point3.style.display = 'block';
+        if (point3.style.display === 'none') {
+            // 放置第三個點
+            const rect = pointsContainer.getBoundingClientRect();
+            const x = e.clientX - rect.left; // 將座標轉換為相對於 pointsContainer
+            const y = e.clientY - rect.top;
 
-                if (checkLine()) {
-                    startRound();
-                } else {
-                    endGame();
-                }
+            point3.style.left = `${x}px`;
+            point3.style.top = `${y}px`;
+            point3.style.display = 'block';
+
+            // 檢查是否連成一線
+            if (checkLine()) {
+                startRound(); // 成功後開始新一輪
+            } else {
+                endGame(); // 未成功則遊戲結束
             }
         }
     });
 
+    // 開始按鈕
     startButton.addEventListener('click', initGame);
+
+    // 再試一次按鈕
     retryButton.addEventListener('click', initGame);
 });
