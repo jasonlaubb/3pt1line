@@ -51,7 +51,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // 更新介面
         elements.timerDisplay.textContent = `剩餘時間：${gameState.timeLeft} 秒`;
         elements.points.p3.style.display = 'none';
-        elements.points.p3.removeAttribute('style');
         
         // 生成新點
         generatePoints();
@@ -64,42 +63,62 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     }
 
-    // 生成點位
+    // 生成點位 (修正版)
     function generatePoints() {
+        const container = elements.pointsContainer;
         const size = 20;
-        const getPos = () => ({
-            x: Math.random() * (window.innerWidth - size),
-            y: Math.random() * (window.innerHeight - size)
-        });
+        const maxX = container.clientWidth - size;
+        const maxY = container.clientHeight - size;
 
         // 第一個點
-        const p1 = getPos();
+        const p1 = {
+            x: Math.random() * maxX,
+            y: Math.random() * maxY
+        };
         elements.points.p1.style.left = `${p1.x}px`;
         elements.points.p1.style.top = `${p1.y}px`;
 
-        // 第二個點（確保距離）
+        // 第二個點 (修正距離檢查)
         let p2;
+        const minDistance = 50;
         do {
-            p2 = getPos();
-        } while (Math.hypot(p2.x - p1.x, p2.y - p1.y) < 50);
+            p2 = {
+                x: Math.random() * maxX,
+                y: Math.random() * maxY
+            };
+        } while (Math.hypot(p2.x - p1.x, p2.y - p1.y) < minDistance);
         
         elements.points.p2.style.left = `${p2.x}px`;
         elements.points.p2.style.top = `${p2.y}px`;
     }
 
-    // 檢查三點一線
+    // 檢查三點一線 (修正版)
     function checkAlignment() {
-        const parse = el => ({
-            x: parseFloat(el.style.left),
-            y: parseFloat(el.style.top)
+        const parsePosition = (el) => ({
+            x: parseFloat(el.style.left) || 0,
+            y: parseFloat(el.style.top) || 0
         });
 
-        const [p1, p2, p3] = ['p1', 'p2', 'p3'].map(p => parse(elements.points[p]));
+        const p1 = parsePosition(elements.points.p1);
+        const p2 = parsePosition(elements.points.p2);
+        const p3 = parsePosition(elements.points.p3);
+
+        // 向量計算
+        const vectorAB = { x: p2.x - p1.x, y: p2.y - p1.y };
+        const vectorBC = { x: p3.x - p2.x, y: p3.y - p2.y };
+
+        // 計算夾角 (修正計算公式)
+        const dotProduct = vectorAB.x * vectorBC.x + vectorAB.y * vectorBC.y;
+        const magnitudeAB = Math.hypot(vectorAB.x, vectorAB.y);
+        const magnitudeBC = Math.hypot(vectorBC.x, vectorBC.y);
         
-        // 計算斜率差
-        const slope = (a, b) => (b.y - a.y) / (b.x - a.x || 0.0001);
-        const angle = Math.abs(Math.atan((slope(p2,p3) - slope(p1,p2)) / (1 + slope(p1,p2)*slope(p2,p3)));
-        return angle * (180/Math.PI) < 10;
+        // 避免除以零
+        if (magnitudeAB === 0 || magnitudeBC === 0) return false;
+        
+        const cosTheta = dotProduct / (magnitudeAB * magnitudeBC);
+        const angle = Math.acos(cosTheta) * (180 / Math.PI);
+        
+        return Math.abs(angle) < 5; // 容許5度誤差
     }
 
     // 更新分數顯示
@@ -116,22 +135,29 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.endScreen.classList.remove('hidden');
     }
 
-    // 點擊事件處理
+    // 點擊事件處理 (修正版)
     elements.pointsContainer.addEventListener('click', e => {
         if (!gameState.isRunning || elements.points.p3.style.display === 'block') return;
 
         const rect = elements.pointsContainer.getBoundingClientRect();
-        elements.points.p3.style.left = `${e.clientX - rect.left}px`;
-        elements.points.p3.style.top = `${e.clientY - rect.top}px`;
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
+
+        // 設置第三點位置
+        elements.points.p3.style.left = `${clickX}px`;
+        elements.points.p3.style.top = `${clickY}px`;
         elements.points.p3.style.display = 'block';
 
-        if (checkAlignment()) {
-            gameState.score += 100;
-            updateScoreDisplay();
-            startRound();
-        } else {
-            endGame();
-        }
+        // 延遲檢查以確保樣式更新
+        setTimeout(() => {
+            if (checkAlignment()) {
+                gameState.score += 100;
+                updateScoreDisplay();
+                startRound();
+            } else {
+                endGame();
+            }
+        }, 10);
     });
 
     // 按鈕綁定
