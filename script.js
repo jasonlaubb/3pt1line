@@ -1,4 +1,3 @@
-// script.js
 document.addEventListener('DOMContentLoaded', () => {
     const startScreen = document.getElementById('start-screen');
     const gameScreen = document.getElementById('game-screen');
@@ -16,8 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let rounds = 0;
     let isGameRunning = false;
 
-    // 遊戲初始化
     function initGame() {
+        console.log('遊戲初始化完成');
         rounds = 0;
         isGameRunning = true;
         startScreen.classList.add('hidden');
@@ -26,21 +25,12 @@ document.addEventListener('DOMContentLoaded', () => {
         startRound();
     }
 
-    // 開始新一輪
     function startRound() {
+        console.log('開始新一輪');
         rounds++;
-        if (rounds <= 5) {
-            timeLeft = 10;
-        } else if (rounds <= 12) {
-            timeLeft = 5;
-        } else if (rounds <= 20) {
-            timeLeft = 3;
-        } else {
-            timeLeft = 1;
-        }
+        timeLeft = rounds <= 5 ? 10 : rounds <= 12 ? 5 : rounds <= 20 ? 3 : 1;
         timerDisplay.textContent = `剩餘時間：${timeLeft} 秒`;
 
-        // 隨機生成兩個點
         const point1X = Math.random() * (window.innerWidth - 40) + 20;
         const point1Y = Math.random() * (window.innerHeight - 40) + 20;
         const point2X = Math.random() * (window.innerWidth - 40) + 20;
@@ -52,12 +42,10 @@ document.addEventListener('DOMContentLoaded', () => {
         point2.style.top = `${point2Y}px`;
         point3.style.display = 'none';
 
-        // 啟動計時器
         clearInterval(timer);
         timer = setInterval(updateTimer, 1000);
     }
 
-    // 更新計時器
     function updateTimer() {
         timeLeft--;
         timerDisplay.textContent = `剩餘時間：${timeLeft} 秒`;
@@ -66,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 檢查三點是否連成一線（傾斜度不超過 10 度）
     function checkLine() {
         const x1 = parseFloat(point1.style.left);
         const y1 = parseFloat(point1.style.top);
@@ -75,14 +62,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const x3 = parseFloat(point3.style.left);
         const y3 = parseFloat(point3.style.top);
 
-        const slope1 = (y2 - y1) / (x2 - x1);
-        const slope2 = (y3 - y2) / (x3 - x2);
-        const angle = Math.abs(Math.atan((slope2 - slope1) / (1 + slope1 * slope2)) * (180 / Math.PI);
+        const slope1 = (x2 - x1) !== 0 ? (y2 - y1) / (x2 - x1) : Infinity;
+        const slope2 = (x3 - x2) !== 0 ? (y3 - y2) / (x3 - x2) : Infinity;
+        const angle = Math.abs(Math.atan((slope2 - slope1) / (1 + slope1 * slope2)) * (180 / Math.PI));
 
         return angle <= 10;
     }
 
-    // 遊戲結束
     function endGame() {
         clearInterval(timer);
         isGameRunning = false;
@@ -90,13 +76,11 @@ document.addEventListener('DOMContentLoaded', () => {
         endScreen.classList.remove('hidden');
     }
 
-    // 點擊事件
     pointsContainer.addEventListener('click', (e) => {
         if (!isGameRunning) return;
 
         if (e.target.classList.contains('point')) {
             if (point3.style.display === 'none') {
-                // 放置第三個點
                 const rect = pointsContainer.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
@@ -104,7 +88,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 point3.style.top = `${y}px`;
                 point3.style.display = 'block';
 
-                // 檢查是否連成一線
                 if (checkLine()) {
                     startRound();
                 } else {
@@ -114,9 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 開始按鈕
     startButton.addEventListener('click', initGame);
-
-    // 再試一次按鈕
     retryButton.addEventListener('click', initGame);
 });
