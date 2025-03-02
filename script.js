@@ -25,26 +25,35 @@ document.addEventListener('DOMContentLoaded', () => {
         startRound();
     }
 
-    function startRound() {
-        console.log('開始新一輪');
-        rounds++;
-        timeLeft = rounds <= 5 ? 10 : rounds <= 12 ? 5 : rounds <= 20 ? 3 : 1;
-        timerDisplay.textContent = `剩餘時間：${timeLeft} 秒`;
+function generateRandomPosition() {
+    const pointX = Math.random() * (window.innerWidth - 40) + 20;
+    const pointY = Math.random() * (window.innerHeight - 40) + 20;
 
-        const point1X = Math.random() * (window.innerWidth - 40) + 20;
-        const point1Y = Math.random() * (window.innerHeight - 40) + 20;
-        const point2X = Math.random() * (window.innerWidth - 40) + 20;
-        const point2Y = Math.random() * (window.innerHeight - 40) + 20;
+    // 確保點在窗口範圍內
+    return {
+        x: Math.min(Math.max(pointX, 20), window.innerWidth - 20),
+        y: Math.min(Math.max(pointY, 20), window.innerHeight - 20),
+    };
+}
 
-        point1.style.left = `${point1X}px`;
-        point1.style.top = `${point1Y}px`;
-        point2.style.left = `${point2X}px`;
-        point2.style.top = `${point2Y}px`;
-        point3.style.display = 'none';
+function startRound() {
+    clearInterval(timer);
+    console.log('開始新一輪');
+    rounds++;
+    timeLeft = rounds <= 5 ? 10 : rounds <= 12 ? 5 : rounds <= 20 ? 3 : 1;
+    timerDisplay.textContent = `剩餘時間：${timeLeft} 秒`;
 
-        clearInterval(timer);
-        timer = setInterval(updateTimer, 1000);
-    }
+    const point1Pos = generateRandomPosition();
+    const point2Pos = generateRandomPosition();
+
+    point1.style.left = `${point1Pos.x}px`;
+    point1.style.top = `${point1Pos.y}px`;
+    point2.style.left = `${point2Pos.x}px`;
+    point2.style.top = `${point2Pos.y}px`;
+    point3.style.display = 'none';
+
+    timer = setInterval(updateTimer, 1000);
+}
 
     function updateTimer() {
         timeLeft--;
