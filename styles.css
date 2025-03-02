@@ -39,12 +39,6 @@ body {
     color: #333;
 }
 
-#points {
-    position: relative;
-    width: 100%;
-    height: 100%;
-}
-
 .point {
     position: absolute;
     width: 20px;
@@ -53,4 +47,22 @@ body {
     border-radius: 50%;
     transform: translate(-50%, -50%);
     cursor: pointer;
+}
+
+/* 確保 points 容器覆蓋整個畫面 */
+#points {
+    position: relative;          /* 允許子元素絕對定位 */
+    width: 100vw;               /* 設置寬度為視窗寬度 */
+    height: 100vh;              /* 設置高度為視窗高度 */
+    overflow: hidden;           /* 防止滾動條出現 */
+}
+
+/* 點的樣式 */
+.point {
+    position: absolute;         /* 點需要絕對定位 */
+    width: 20px;                /* 點的直徑 */
+    height: 20px;
+    background: red;            /* 點的顏色 */
+    border-radius: 50%;         /* 圓形點 */
+    cursor: pointer;            /* 鼠標變為手型 */
 }
