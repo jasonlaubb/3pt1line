@@ -47,7 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // 時間計算
         gameState.timeLeft = gameState.rounds <= 5 ? 10 :
                            gameState.rounds <= 12 ? 5 :
-                           gameState.rounds <= 20 ? 3 : 1;
+                           gameState.rounds <= 20 ? 3 :
+                           gameState.round <= 100 ? 1 :
+                            gameState.roubds <= 500 ? 0.5 : 0.4;
         
         // 更新介面
         elements.timerDisplay.textContent = `剩餘時間：${gameState.timeLeft.toFixed(1)} 秒`;
@@ -61,7 +63,10 @@ document.addEventListener('DOMContentLoaded', () => {
         gameState.timer = setInterval(() => {
             gameState.timeLeft -= 0.1;
             elements.timerDisplay.textContent = `剩餘時間：${gameState.timeLeft.toFixed(1)} 秒`;
-            if (gameState.timeLeft <= 0) endGame();
+            if (gameState.timeLeft <= 0) {
+                endGame();
+                elements.score.final.textContent = `最終得分：${gameState.score}`;
+            }
         }, 100);
     }
 
@@ -121,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.points.p3.style.display = 'block';
 
         if (checkAlignment()) {
-            gameState.score += 100;
+            gameState.score += 1;
             elements.score.now.textContent = `得分：${gameState.score}`;
             startRound();
         } else {
