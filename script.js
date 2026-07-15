@@ -64,8 +64,9 @@ document.addEventListener('DOMContentLoaded', () => {
             gameState.timeLeft -= 0.1;
             elements.timerDisplay.textContent = `剩餘時間：${gameState.timeLeft.toFixed(1)} 秒`;
             if (gameState.timeLeft <= 0) {
-                endGame();
+                
                 elements.score.final.textContent = `最終得分：${gameState.score}`;
+                endGame();
             }
         }, 100);
     }
@@ -126,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.points.p3.style.display = 'block';
 
         if (checkAlignment()) {
-            gameState.score += 1;
+            gameState.score += 100;
             elements.score.now.textContent = `得分：${gameState.score}`;
             startRound();
         } else {
